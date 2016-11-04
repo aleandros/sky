@@ -1,0 +1,2 @@
+defmodule Sky do
+end
