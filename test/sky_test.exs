@@ -6,6 +6,12 @@ defmodule SkyTest do
   # the doctests, let's focus on composing
   # this library's functions.
 
+  test "curry preserves argument order" do
+    assert [1, 2, 3, 4] ==
+      Sky.curry(fn(a, b, c, d) -> [a, b, c, d] end).
+      (1).(2).(3).(4)
+  end
+
   test "compose a safe float division" do
     safe_float_div =
       fn(a, b) -> a / b end
