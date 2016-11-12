@@ -20,15 +20,14 @@ defmodule Sky do
     6
   """
   def curry(f, given \\ []) when is_function(f) do
-    n = arity(f)
+    curried(f, Enum.reverse(given), arity(f))
+  end
 
-    if length(given) == n do
-      apply(f, given)
-    else
-      fn x ->
-        curry(f, Enum.reverse([x|given]))
-      end
-    end
+  defp curried(f, args, arity) when length(args) == arity do
+    apply(f, Enum.reverse(args))
+  end
+  defp curried(f, args, arity) do
+    fn x -> curried(f, [x | args], arity) end
   end
 
   @doc """
