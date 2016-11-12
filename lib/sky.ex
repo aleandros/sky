@@ -26,7 +26,6 @@ defmodule Sky do
   defp curried(f, args, arity) when length(args) == arity do
     apply(f, Enum.reverse(args))
   end
-
   defp curried(f, args, arity) do
     fn x -> curried(f, [x | args], arity) end
   end
