@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Sky by aleandros</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Sky</h1>
+      <h2 class="project-tagline">Functional programming utilities for elixir</h2>
+      <a href="https://github.com/aleandros/sky" class="btn">View on GitHub</a>
+      <a href="https://github.com/aleandros/sky/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/aleandros/sky/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h1>
+<a id="sky" class="anchor" href="#sky" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Sky</h1>
+
+<p><a href="https://travis-ci.org/aleandros/sky"><img src="https://travis-ci.org/aleandros/sky.svg?branch=master" alt="Build Status"></a></p>
+
+<p>A small set of functions for manipulation functions in elixir.</p>
+
+<h2>
+<a id="rationale" class="anchor" href="#rationale" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Rationale</h2>
+
+<p>The pipe operator is probably one of the coolest features of the language. While
+not exclusive to elixir, it's a core part of writing readable programs. You just
+begin with your data and transform it step by step.</p>
+
+<p>But Elixir is functional. Functions are data too. Why not transforming them as we see fit?
+This small collection of functions attempts to provide a way to do just that.</p>
+
+<p>One important aspect of this library is that it tries to be useful as much as it
+is intended to be fun thought experiment. That's why everything is provided with
+functions instead of macros. Why? Maybe I'm not smart enough for macros. But also
+I believe that we can go a long, long way without them.</p>
+
+<h2>
+<a id="examples" class="anchor" href="#examples" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Examples</h2>
+
+<p>You can find more of these in the documentation or in the tests, but let's
+begin with a simple one:</p>
+
+<div class="highlight highlight-source-elixir"><pre>safe_float_div <span class="pl-k">=</span> 
+  <span class="pl-k">fn</span>(<span class="pl-smi">a</span>, <span class="pl-smi">b</span>) <span class="pl-k">-</span><span class="pl-k">&gt;</span> a <span class="pl-k">/</span> b <span class="pl-k">end</span>
+  <span class="pl-k">|</span><span class="pl-k">&gt;</span> <span class="pl-en">Sky</span>.tupleize
+  <span class="pl-k">|</span><span class="pl-k">&gt;</span> <span class="pl-en">Sky</span>.noraise
+
+safe_float_div.({<span class="pl-c1">1</span>, <span class="pl-c1">0</span>})
+<span class="pl-c"># =&gt; {:error, %ArithmeticError{message: "bad argument in arithmetic expression"}}</span>
+
+safe_float_div.({<span class="pl-c1">1</span>, <span class="pl-c1">2</span>})
+<span class="pl-c"># =&gt; {:ok, 0.5}</span></pre></div>
+
+<p>The idea is to create more sophisticated functions without complicated branching
+that distracts us from our original intent.</p>
+
+<p>Let's look at something more interesting. The square root of a number is not defined
+for negative numbers, and the logarithm is undefined for non-positive numbers
+(negative numbers and zero). How could we take our arithmetic functions and make
+them safe, yet leave our code free of conditionals and unnecessary pattern matching?</p>
+
+<div class="highlight highlight-source-elixir"><pre>lift_predicate <span class="pl-k">=</span>
+  (&amp;<span class="pl-en">Sky</span>.reject_if<span class="pl-k">/</span><span class="pl-c1">2</span>)
+  <span class="pl-k">|</span><span class="pl-k">&gt;</span> <span class="pl-en">Sky</span>.swap
+  <span class="pl-k">|</span><span class="pl-k">&gt;</span> <span class="pl-en">Sky</span>.curry
+
+non_negative? <span class="pl-k">=</span> <span class="pl-k">fn</span> <span class="pl-smi">x</span> <span class="pl-k">-&gt;</span> x <span class="pl-k">&gt;=</span> <span class="pl-c1">0</span> <span class="pl-k">end</span>
+
+lift_positive <span class="pl-k">=</span> lift_predicate.(non_negative?)
+safe_sqrt <span class="pl-k">=</span> lift_positive.(&amp;<span class="pl-c1">:math</span>.sqrt<span class="pl-k">/</span><span class="pl-c1">1</span>)
+
+safe_sqrt.(<span class="pl-c1">9</span>)  <span class="pl-c"># =&gt; {:ok, 3.0}</span>
+safe_sqrt.(<span class="pl-k">-</span><span class="pl-c1">1</span>) <span class="pl-c"># =&gt; :error</span></pre></div>
+
+<p>Now let's reuse our <code>lift_predicate</code> function to do something a the non-zero numbers.</p>
+
+<div class="highlight highlight-source-elixir"><pre>lift_non_zero <span class="pl-k">=</span> lift_predicate.(<span class="pl-k">fn</span> <span class="pl-smi">n</span> <span class="pl-k">-&gt;</span> n <span class="pl-k">!=</span> <span class="pl-c1">0</span> <span class="pl-k">end</span>)
+safe_log <span class="pl-k">=</span> lift_non_zero.(&amp;<span class="pl-c1">:math</span>.log<span class="pl-k">/</span><span class="pl-c1">1</span>)
+
+safe_log.(<span class="pl-c1">1</span>) <span class="pl-c"># =&gt; {:ok, 0.0}</span>
+safe_log.(<span class="pl-c1">0</span>) <span class="pl-c"># =&gt; :error</span></pre></div>
+
+<h2>
+<a id="gotchas" class="anchor" href="#gotchas" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Gotchas</h2>
+
+<p>There are probably missing functions and possible use patterns that can arise
+if this thing is used in more realistic environments.</p>
+
+<p>Also, modifying functions through piping, while powerful, can probably get unreadable
+pretty soon, so piping functions through the Sky API probably should be done in small
+steps.</p>
+
+<p>Another important thing is that when we create anonymous functions and bind them
+to variables, the syntax for using them in pipes is kind of clunky.</p>
+
+<div class="highlight highlight-source-elixir"><pre>inc <span class="pl-k">=</span> <span class="pl-k">fn</span> <span class="pl-smi">x</span> <span class="pl-k">-&gt;</span> x <span class="pl-k">+</span> <span class="pl-c1">1</span> <span class="pl-k">end</span>
+x <span class="pl-k">=</span> <span class="pl-c1">1</span> <span class="pl-k">|</span><span class="pl-k">&gt;</span> inc.() <span class="pl-k">|</span><span class="pl-k">&gt;</span> inc.()</pre></div>
+
+<h2>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation</h2>
+
+<p>If <a href="https://hex.pm/docs/publish">available in Hex</a>, the package can be installed as:</p>
+
+<ol>
+<li>Add <code>sky</code> to your list of dependencies in <code>mix.exs</code>:</li>
+</ol>
+
+<div class="highlight highlight-source-elixir"><pre><span class="pl-k">def</span> <span class="pl-en">deps</span> <span class="pl-k">do</span>
+  [{<span class="pl-c1">:sky</span>, <span class="pl-s"><span class="pl-pds">"</span>~&gt; 0.1.0<span class="pl-pds">"</span></span>}]
+<span class="pl-k">end</span></pre></div>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/aleandros/sky">Sky</a> is maintained by <a href="https://github.com/aleandros">aleandros</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
