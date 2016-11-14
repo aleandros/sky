@@ -1,7 +1,6 @@
 defmodule Sky do
   @moduledoc """
-  Collection of higher-oder functions
-  not present in the standard library.
+  Collection of higher-oder functions not present in the standard library.
   """
 
   @doc """
@@ -11,13 +10,13 @@ defmodule Sky do
 
   The order of the arguments is respected.
 
-    iex> Sky.curry(fn(a, b) -> a - b end).(5).(4)
-    1
+      iex> Sky.curry(fn(a, b) -> a - b end).(5).(4)
+      1
 
   You can also pass it a list of predefined parameters.
 
-    iex> Sky.curry(fn(a, b, c) -> a + b + c end, [1, 2]).(3)
-    6
+      iex> Sky.curry(fn(a, b, c) -> a + b + c end, [1, 2]).(3)
+      6
   """
   def curry(f, given \\ []) when is_function(f) do
     curried(f, Enum.reverse(given), arity(f))
@@ -36,8 +35,8 @@ defmodule Sky do
 
   ## Example
 
-    iex> Sky.tupleize(fn(a, b) -> a + b end).({1, 2})
-    3
+      iex> Sky.tupleize(fn(a, b) -> a + b end).({1, 2})
+      3
 
   It might seem less useful for functions of one argument, but you might
   gain composability with other functions from the module.
@@ -61,17 +60,17 @@ defmodule Sky do
 
   ## Example
 
-    iex> inc = Sky.lift_ok(fn n -> n + 1 end)
-    iex> inc.({:ok, 1})
-    {:ok, 2}
-    iex> inc.({:error, :bad_input})
-    {:error, :bad_input}
+      iex> inc = Sky.lift_ok(fn n -> n + 1 end)
+      iex> inc.({:ok, 1})
+      {:ok, 2}
+      iex> inc.({:error, :bad_input})
+      {:error, :bad_input}
 
   Note that the value is always a two-element tuple `{:ok, v}`.
 
-    iex> inc = Sky.lift_ok(fn n -> n + 1 end)
-    iex> inc.(inc.({:ok, 1}))
-    {:ok, 3}
+      iex> inc = Sky.lift_ok(fn n -> n + 1 end)
+      iex> inc.(inc.({:ok, 1}))
+      {:ok, 3}
 
   """
   def lift_ok(f) when is_function(f) do
@@ -90,11 +89,11 @@ defmodule Sky do
 
   ## Examples
 
-    iex> Sky.swap(&rem/2).(7, 5)
-    5
+      iex> Sky.swap(&rem/2).(7, 5)
+      5
 
-    iex> Sky.swap(fn(a, b) -> a - b end).(2, 1)
-    -1
+      iex> Sky.swap(fn(a, b) -> a - b end).(2, 1)
+      -1
   """
   def swap(f) when is_function(f) do
     fn(a, b) -> f.(b, a) end
@@ -106,11 +105,11 @@ defmodule Sky do
 
   ## Example
 
-    iex> one = Sky.constant(1)
-    iex> one.(2)
-    1
-    iex> one.(nil)
-    1
+      iex> one = Sky.constant(1)
+      iex> one.(2)
+      1
+      iex> one.(nil)
+      1
   """
   def constant(value) do
     fn _ -> value end
@@ -125,11 +124,11 @@ defmodule Sky do
 
   ## Examples
 
-    iex> safe_float_div = Sky.noraise(fn ({a, b}) -> a / b end)
-    iex> safe_float_div.({1, 0})
-    {:error, %ArithmeticError{message: "bad argument in arithmetic expression"}}
-    iex> safe_float_div.({1, 2})
-    {:ok, 0.5}
+      iex> safe_float_div = Sky.noraise(fn ({a, b}) -> a / b end)
+      iex> safe_float_div.({1, 0})
+      {:error, %ArithmeticError{message: "bad argument in arithmetic expression"}}
+      iex> safe_float_div.({1, 2})
+      {:ok, 0.5}
   """
   def noraise(f) when is_function(f) do
     fn x ->
@@ -149,12 +148,12 @@ defmodule Sky do
 
   ## Example
 
-    iex> f = fn x -> x - 1 end
-    iex> p = fn x -> x > 0 end
-    iex> Sky.reject_if(f, p).(1)
-    {:ok, 0}
-    iex> Sky.reject_if(f, p).(0)
-    :error
+      iex> f = fn x -> x - 1 end
+      iex> p = fn x -> x > 0 end
+      iex> Sky.reject_if(f, p).(1)
+      {:ok, 0}
+      iex> Sky.reject_if(f, p).(0)
+      :error
   """
   def reject_if(f, p) when is_function(f) and is_function(p) do
     fn x ->
@@ -171,13 +170,13 @@ defmodule Sky do
 
   ## Example
 
-    iex> trim = (&tl/1)
-    iex> non_empty? = fn list -> length(list) > 0 end
-    iex> safetrim = Sky.apply_if(trim, non_empty?)
-    iex> safetrim.([1,2])
-    [2]
-    iex> safetrim.([])
-    []
+      iex> trim = (&tl/1)
+      iex> non_empty? = fn list -> length(list) > 0 end
+      iex> safetrim = Sky.apply_if(trim, non_empty?)
+      iex> safetrim.([1,2])
+      [2]
+      iex> safetrim.([])
+      []
   """
   def apply_if(f, p) when is_function(f) and is_function(p) do
     fn x ->
@@ -190,26 +189,27 @@ defmodule Sky do
   boolean value, return a function which is equivalent to `not p.(x)`
 
   ## Example
-    iex> negative? = fn x -> x < 0 end
-    iex> no_negative? = Sky.negate(negative?)
-    iex> no_negative?.(1)
-    true
+
+      iex> negative? = fn x -> x < 0 end
+      iex> no_negative? = Sky.negate(negative?)
+      iex> no_negative?.(1)
+      true
 
   """
   def negate(p) when is_function(p) do
     fn v -> not p.(v) end
   end
 
-  @doc """
+  @doc ~S"""
   Get the arity of the given function.
 
   ## Examples
 
-    iex> Sky.arity(&Enum.map/2)
-    2
+      iex> Sky.arity(&Enum.map/2)
+      2
 
-    iex> Sky.arity(fn(_, _, _) -> nil end)
-    3
+      iex> Sky.arity(fn(_, _, _) -> nil end)
+      3
   """
   def arity(f) when is_function(f) do
     :erlang.fun_info(f)[:arity]
