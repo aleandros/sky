@@ -1,9 +1,9 @@
 defmodule Sky do
-  @moduledoc ~S"""
+  @moduledoc """
   Collection of higher-oder functions not present in the standard library.
   """
 
-  @doc ~S"""
+  @doc """
   Curries the given function, starting with an optional list of given params.
 
   ## Examples
@@ -30,7 +30,7 @@ defmodule Sky do
     end
   end
 
-  @doc ~S"""
+  @doc """
   Given a function *f* with arity *n*, return a function that receives a
   single tuple of *n* elements and applies them to the original *f*.
 
@@ -50,7 +50,7 @@ defmodule Sky do
     end
   end
 
-  @doc ~S"""
+  @doc """
   Given a *single-argument* function *f*, return a new function that
   receives either a tuple in the form `{:ok, value}` which would execute
   `f.(value)`, or any other term, which would be returned without change.
@@ -84,7 +84,7 @@ defmodule Sky do
   defp flatten({:ok, value}), do: flatten(value)
   defp flatten(value), do: {:ok, value}
 
-  @doc ~S"""
+  @doc """
   Given a two argument functions, swap the order in wich the arguments
   are received.
 
@@ -100,7 +100,7 @@ defmodule Sky do
     fn(a, b) -> f.(b, a) end
   end
 
-  @doc ~S"""
+  @doc """
   Creates a function that receives an argument and always returns the
   original given value.
 
@@ -141,7 +141,7 @@ defmodule Sky do
     end
   end
 
-  @doc ~S"""
+  @doc """
   Given two one-argument functions, a subject *f* and a predicate *p*, return
   a function that takes an argument *x*.
 
@@ -162,7 +162,7 @@ defmodule Sky do
     end
   end
 
-  @doc ~S"""
+  @doc """
   Given two one-argument functions, a subject *f* and a predicate *p*, return
   a function that takes an argument *x*.
 
@@ -185,7 +185,7 @@ defmodule Sky do
     end
   end
 
-  @doc ~S"""
+  @doc """
   Given a predicate *p*, which receives a single argument and returns a
   boolean value, return a function which is equivalent to `not p.(x)`
 
