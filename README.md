@@ -16,7 +16,8 @@ This small collection of functions attempts to provide a way to do just that.
 One important aspect of this library is that it tries to be useful as much as it
 is intended to be fun thought experiment. ~~That's why everything is provided with
 functions instead of macros. Why? Maybe I'm not smart enough for macros. But also
-I believe that we can go a long, long way without them.~~ While the original idea was to use only functions, turns out that's stupid since it undervalues useful
+I believe that we can go a long, long way without them.~~ While the original idea
+was to use only functions, turns out that's stupid since it undervalues useful
 functionality that can be added with them. The core of Sky is functions only, but
 a module named `Sky.Ext` in order to have a richer API.
 
@@ -73,14 +74,17 @@ safe_log.(0) # => :error
 ## Syntax extensions
 
 The module `Sky.Ext` provides a couple of macros and a couple of operators
-in order to have a more complete experience. The most basic macro, `op/1`,
-attempts to make easier to partially apply arguments to operators.
+in order to have a more complete experience. There's also the `fill/1` macro,
+which attempts to make easier create functions from simple expressions.
 
 ```elixir
 import Sky.Ext
 
-invert = op(1 / _)
+invert = fill(1 / _)
 invert.(2) # => 0.5
+
+divide = fill(_ / _)
+divide.(4).(2) # => 2.0
 ```
 
 The other macros attempt to provide pseudo-inverse functionality for

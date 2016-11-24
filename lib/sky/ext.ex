@@ -128,40 +128,16 @@ defmodule Sky.Ext do
   end
 
   @doc """
-  ## Examples
+  Given an elixir expression, return a curried function
+  that applies every argument in place of underscores (`_`)
+  placeholders, in the order in which they appear, from left
+  to right.
 
-      iex> import Sky.Ext, only: [op: 1]
-      iex> positive = op(_ > 0)
-      iex> positive.(10)
-      true
-
-      iex> import Sky.Ext, only: [op: 1]
-      iex> invert = op(1 / _)
-      iex> invert.(2)
-      0.5
-  """
-  defmacro op({operator, _meta, [{:_, _, _}, rhs]}) do
-    quote bind_quoted: [operator: operator, rhs: rhs] do
-      fn x ->
-        apply(Kernel, operator, [x, rhs])
-      end
-    end
-  end
-  defmacro op({operator, _meta, [lhs, {:_, _, _}]}) do
-    quote bind_quoted:  [operator: operator, lhs: lhs] do
-      fn x ->
-        apply(Kernel, operator, [lhs, x])
-      end
-    end
-  end
-
-  @doc """
   ## Examples
 
       iex> import Sky.Ext, only: [fill: 1]
       iex> fill([_, 1, _, 3]).(0).(2)
       [0, 1, 2, 3]
-
 
       iex> import Sky.Ext, only: [fill: 1]
       iex> fill({_, 1, _, 3}).(0).(2)
