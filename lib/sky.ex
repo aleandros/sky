@@ -214,4 +214,64 @@ defmodule Sky do
   def arity(f) when is_function(f) do
     :erlang.fun_info(f)[:arity]
   end
+
+  @doc ~S"""
+  Feed a value into an unary function.
+
+  Can be used to *pipe* a value to Sky generated unary functions.
+
+      iex> import Sky, only: [~>: 2]
+      iex> "Hello"
+      ...> ~> (&String.downcase/1)
+      ...> ~> (&String.to_atom/1)
+      :hello
+
+  """
+  def v ~> f, do: f.(v)
+
+  @doc ~S"""
+  Given two unary functions *f* and *g*, return their composition `f  ∘ g`.
+
+      iex> x = Sky.compose(&String.to_atom/1, &String.downcase/1)
+      iex> x.("HELLO")
+      :hello
+
+  """
+  def compose(f, g) do
+    fn x -> g.(x) |> f.() end
+  end
+
+
+  @doc ~S"""
+  Partially applies a function.
+
+  This is `curry`'s cousin. Both can be used to partially apply functions,
+  however `partial` returns an unary function that expects a *list* with more arguments
+  instead of just the next one. This can be useful for making a function of any arity
+  into an unary function that expects a list.
+
+      iex> x = Sky.partial(fn a, b, c -> a + b + c end)
+      iex> x.([1, 2, 3])
+      6
+
+  An optional list of partial arguments can be provided:
+
+      iex> x = Sky.partial(fn a, b, c -> a + b + c end, [1, 2])
+      iex> x.([3])
+      6
+  """
+  def partial(f, given \\ []) do
+    partial(f, given, arity(f))
+  end
+
+  defp partial(f, args, arity) when length(args) != arity do
+    fn more_args when is_list(more_args) ->
+      partial(f, args ++ more_args, arity)
+    end
+  end
+
+  defp partial(f, args, _arity) do
+    apply(f, args)
+  end
+
 end
