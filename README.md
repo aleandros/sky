@@ -79,9 +79,8 @@ attempts to make easier to partially apply arguments to operators.
 ```elixir
 import Sky.Ext
 
-4
-|> op(1 / _)
-|> op(_ * 2) # => 0.5
+invert = op(1 / _)
+invert.(2) # => 0.5
 ```
 
 The other macros attempt to provide pseudo-inverse functionality for
