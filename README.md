@@ -14,9 +14,11 @@ But Elixir is functional. Functions are data too. Why not transforming them as w
 This small collection of functions attempts to provide a way to do just that.
 
 One important aspect of this library is that it tries to be useful as much as it
-is intended to be fun thought experiment. That's why everything is provided with
+is intended to be fun thought experiment. ~~That's why everything is provided with
 functions instead of macros. Why? Maybe I'm not smart enough for macros. But also
-I believe that we can go a long, long way without them.
+I believe that we can go a long, long way without them.~~ While the original idea was to use only functions, turns out that's stupid since it undervalues useful
+functionality that can be added with them. The core of Sky is functions only, but
+a module named `Sky.Ext` in order to have a richer API.
 
 ## Examples
 
@@ -68,6 +70,40 @@ safe_log.(1) # => {:ok, 0.0}
 safe_log.(0) # => :error
 ```
 
+## Syntax extensions
+
+The module `Sky.Ext` provides a couple of macros and a couple of operators
+in order to have a more complete experience. The most basic macro, `op/1`,
+attempts to make easier to partially apply arguments to operators.
+
+```elixir
+import Sky.Ext
+
+4
+|> op(1 / _)
+|> op(_ * 2) # => 0.5
+```
+
+The other macros attempt to provide pseudo-inverse functionality for
+`tupleize/1` and `curry/1` via `untuple/2` and `uncurry/2` respectively. Note
+that the arity must be explicitly provided and that guards cannot be recovered.
+
+```elixir
+import Sky.Ext
+
+add = fn(a, b) -> a + b end
+addc = Sky.curry(add)
+addt = Sky.tupleize(add)
+
+addc.(1).(2) # => 3
+addt.({1, 2}) # => 3
+
+uncurry(addc, 2).(1, 2) # => 3
+untuple(addt, 2).(1, 2) # => 3
+```
+
+The operators provided are explained in the next section.
+
 ## Gotchas
 
 There are probably missing functions and possible use patterns that can arise
@@ -82,7 +118,17 @@ to variables, the syntax for using them in pipes is kind of clunky.
 
 ```elixir
 inc = fn x -> x + 1 end
-x = 1 |> inc.() |> inc.()
+x = 1 |> inc.() |> inc.() # => 3
+```
+
+This can be made more readable by using the operators provided in `Sky.Ext`
+(Credit goes to [Vic](http://github.com/vic))
+
+```elixir
+import Sky.Ext
+
+inc = fn x -> x + 1 end
+x = 1 ~> inc ~> inc # => 3
 ```
 
 ## Installation
