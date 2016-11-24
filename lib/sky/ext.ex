@@ -155,6 +155,72 @@ defmodule Sky.Ext do
     end
   end
 
+  @doc """
+  ## Examples
+
+      iex> import Sky.Ext, only: [fill: 1]
+      iex> fill([_, 1, _, 3]).(0).(2)
+      [0, 1, 2, 3]
+
+
+      iex> import Sky.Ext, only: [fill: 1]
+      iex> fill({_, 1, _, 3}).(0).(2)
+      {0, 1, 2, 3}
+
+      iex> import Sky.Ext, only: [fill: 1]
+      iex> fill(_ / _).(10).(2)
+      5.0
+
+      iex> import Sky.Ext, only: [fill: 1]
+      iex> fill(1 / _).(2)
+      0.5
+
+      iex> import Sky.Ext, only: [fill: 1]
+      iex> fill(_ > 0).(2)
+      true
+
+      iex> import Sky.Ext, only: [fill: 1]
+      iex> fill(Enum.reduce([1, 2, 3], _, &Kernel.+/2)).(10)
+      16
+  """
+  defmacro fill(list) when is_list(list) do
+    {args, values} = placeholder_args(list)
+    quote do
+      Sky.curry(fn unquote_splicing(args) ->
+        unquote(values)
+      end)
+    end
+  end
+  defmacro fill({call, meta, args}) do
+    {args, values} = placeholder_args(args)
+    quote do
+      Sky.curry(fn unquote_splicing(args) ->
+        unquote({call, meta, values})
+      end)
+    end
+  end
+
+  defp placeholder_args(exprs) do
+    values =
+      exprs
+      |> Stream.with_index
+      |> Enum.map(fn
+        {_placeholder = {:_, _, _}, index} ->
+          {:"var#{index}", [placeholder: true], nil}
+        {other, _index} ->
+          other
+      end)
+
+    args =
+      values
+      |> Enum.filter(fn
+        {_, [placeholder: true], _} -> true
+        _ -> false
+      end)
+
+    {args, values}
+  end
+
   defp n_vars(n) do
     1..n |> Enum.map(&var_from_n/1)
   end
